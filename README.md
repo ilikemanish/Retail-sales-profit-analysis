@@ -30,11 +30,11 @@ Retail businesses need to understand which regions, products, customer segments,
 
 ## 📊 Dashboard KPIs
 
-> **💰 Total Sales:** $14.92M  
-> **📈 Total Profit:** $1.52M  
+> **💰 Total Sales:** 14.92M  
+> **📈 Total Profit:** 1.52M  
 > **🛒 Total Orders:** 5,496  
 > **🏷️ Average Discount:** 4.97%  
-> **🚚 Total Shipping Cost:** $107.83K  
+> **🚚 Total Shipping Cost:** 107.83K  
 
 ---
 
