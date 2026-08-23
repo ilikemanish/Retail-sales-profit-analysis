@@ -40,12 +40,13 @@
             color: var(--text-main);
             display: flex;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* Glassmorphism Sidebar */
+        /* Glassmorphism Sidebar (Desktop) */
         .sidebar {
             width: 280px;
-            background: rgba(2, 6, 23, 0.7);
+            background: rgba(2, 6, 23, 0.85);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border-right: 1px solid var(--glass-border);
@@ -55,6 +56,7 @@
             display: flex;
             flex-direction: column;
             z-index: 100;
+            transition: all 0.3s ease;
         }
 
         .brand h2 {
@@ -99,10 +101,11 @@
             margin-left: 280px;
             padding: 3rem;
             width: calc(100% - 280px);
+            transition: all 0.3s ease;
         }
 
         .page-header {
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
             animation: fadeInDown 0.8s ease-out;
         }
 
@@ -110,18 +113,19 @@
             font-size: 2.5rem;
             font-weight: 800;
             letter-spacing: -0.5px;
+            line-height: 1.2;
         }
 
         .page-header p {
             color: var(--text-muted);
             font-size: 1.1rem;
-            margin-top: 5px;
+            margin-top: 8px;
         }
 
         /* Premium KPI Cards */
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 1.5rem;
             margin-bottom: 3.5rem;
         }
@@ -156,9 +160,10 @@
         }
 
         .kpi-value {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             font-weight: 800;
             color: var(--text-main);
+            word-wrap: break-word;
         }
 
         .kpi-subtext {
@@ -170,11 +175,12 @@
         /* Dynamic Chart Containers */
         .chart-grid-2, .chart-grid-3 {
             display: grid;
-            gap: 2rem;
+            gap: 1.5rem;
             margin-bottom: 3.5rem;
+            width: 100%;
         }
         
-        .chart-grid-2 { grid-template-columns: 1fr 1fr; }
+        .chart-grid-2 { grid-template-columns: repeat(2, 1fr); }
         .chart-grid-3 { grid-template-columns: 2fr 1fr; }
 
         .chart-wrapper {
@@ -184,12 +190,14 @@
             border-radius: 24px;
             padding: 1.5rem;
             animation: fadeInUp 1s ease-out backwards;
+            width: 100%;
+            overflow: hidden;
         }
 
         .chart-title {
             font-size: 1.2rem;
             font-weight: 700;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             color: var(--text-main);
         }
 
@@ -229,23 +237,82 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Responsive Layout */
+        /* =========================================
+           RESPONSIVE DESIGN LOGIC
+           ========================================= */
+
+        /* Tablets & Smaller Laptops */
         @media (max-width: 1024px) {
-            .chart-grid-2, .chart-grid-3 { grid-template-columns: 1fr; }
-            .kpi-grid { grid-template-columns: 1fr 1fr; }
+            .chart-grid-3 { grid-template-columns: 1fr; }
+            .main-content { padding: 2rem; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
         }
+
+        /* Mobile Devices (Phones) */
         @media (max-width: 768px) {
-            .sidebar { width: 80px; padding: 2rem 1rem; }
-            .brand h2, .nav-link span { display: none; }
-            .nav-link { justify-content: center; }
-            .main-content { margin-left: 80px; width: calc(100% - 80px); padding: 1.5rem; }
-            .kpi-grid { grid-template-columns: 1fr; }
+            /* Turn sidebar into bottom navigation */
+            .sidebar {
+                width: 100%;
+                height: 70px;
+                flex-direction: row;
+                justify-content: space-around;
+                align-items: center;
+                padding: 0 10px;
+                bottom: 0;
+                top: auto;
+                border-right: none;
+                border-top: 1px solid var(--glass-border);
+                background: rgba(2, 6, 23, 0.95);
+            }
+
+            .brand { display: none; } /* Hide logo on mobile */
+
+            .nav-menu {
+                flex-direction: row;
+                width: 100%;
+                justify-content: space-between;
+                gap: 0;
+            }
+
+            .nav-link {
+                flex-direction: column;
+                gap: 4px;
+                padding: 8px 12px;
+                font-size: 0.75rem;
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+
+            .nav-link:hover, .nav-link.active {
+                color: var(--neon-blue) !important;
+                transform: none;
+            }
+
+            .nav-link i { font-size: 1.2rem; }
+            
+            /* Expand main content */
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 1.5rem 1rem 90px 1rem; /* Extra padding at bottom for nav */
+            }
+
+            /* Adjust typography & spacing */
+            .page-header h1 { font-size: 2rem; }
+            .kpi-grid { grid-template-columns: 1fr; gap: 1rem; }
+            .chart-grid-2 { grid-template-columns: 1fr; }
+            .chart-wrapper { padding: 1rem; }
+            
+            /* Shrink charts slightly so they fit mobile screens beautifully */
+            .canvas-container { height: 260px; }
+            .insight-box { padding: 1.5rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar Navigation -->
+    <!-- Responsive Sidebar / Bottom Nav -->
     <nav class="sidebar">
         <div class="brand">
             <h2>Project Retail Sales & Profit Analysis</h2>
@@ -254,7 +321,7 @@
             <a href="#overview" class="nav-link active"><i class="fas fa-home"></i> <span>Overview</span></a>
             <a href="#charts" class="nav-link"><i class="fas fa-chart-simple"></i> <span>Visuals</span></a>
             <a href="#logistics" class="nav-link"><i class="fas fa-truck-fast"></i> <span>Logistics</span></a>
-            <a href="#details" class="nav-link"><i class="fas fa-list"></i> <span>Deep Details</span></a>
+            <a href="#details" class="nav-link"><i class="fas fa-list"></i> <span>Insights</span></a>
         </div>
     </nav>
 
@@ -333,7 +400,7 @@
         <section id="logistics">
             <div class="chart-wrapper" style="margin-bottom: 4rem;">
                 <div class="chart-title">Fulfillment by Shipping Mode (Volume)</div>
-                <div class="canvas-container" style="height: 250px;">
+                <div class="canvas-container">
                     <canvas id="shippingChart"></canvas>
                 </div>
             </div>
@@ -360,9 +427,8 @@
 
     </main>
 
-    <!-- JavaScript - GUARANTEED VISIBILITY -->
+    <!-- JavaScript - GUARANTEED VISIBILITY & RESPONSIVENESS -->
     <script>
-        // Ensure DOM is fully loaded before rendering charts
         document.addEventListener('DOMContentLoaded', function() {
             
             // Global Chart Settings
@@ -374,6 +440,13 @@
                 drawBorder: false
             };
 
+            // Shared options for flawless resizing
+            const sharedOptions = {
+                responsive: true,
+                maintainAspectRatio: false, // CRITICAL: allows canvas container to dictate height
+                plugins: { legend: { display: false } }
+            };
+
             // 1. Regional Bar Chart
             const regionCtx = document.getElementById('regionChart').getContext('2d');
             new Chart(regionCtx, {
@@ -383,16 +456,14 @@
                     datasets: [{
                         label: 'Revenue',
                         data: [3597549, 3063212, 2837305, 2014248, 1510195, 975867, 800847, 116376],
-                        backgroundColor: 'rgba(56, 189, 248, 0.8)', // Neon Blue
+                        backgroundColor: 'rgba(56, 189, 248, 0.8)',
                         borderColor: '#38bdf8',
                         borderWidth: 1,
                         borderRadius: 6
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    ...sharedOptions,
                     scales: {
                         y: { grid: gridConfig, ticks: { callback: (val) => (val/1000000).toFixed(1) + 'M' } },
                         x: { grid: { display: false } }
@@ -409,10 +480,10 @@
                     datasets: [{
                         data: [5498904, 3566160, 3063611, 2786923],
                         backgroundColor: [
-                            'rgba(168, 85, 247, 0.8)', // Purple
-                            'rgba(56, 189, 248, 0.8)', // Blue
-                            'rgba(52, 211, 153, 0.8)', // Green
-                            'rgba(236, 72, 153, 0.8)'  // Pink
+                            'rgba(168, 85, 247, 0.8)',
+                            'rgba(56, 189, 248, 0.8)',
+                            'rgba(52, 211, 153, 0.8)',
+                            'rgba(236, 72, 153, 0.8)'
                         ],
                         borderWidth: 0,
                         hoverOffset: 10
@@ -421,12 +492,12 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '70%',
+                    cutout: '65%',
                     plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc', padding: 15, usePointStyle: true } } }
                 }
             });
 
-            // 3. Category Bar (Changed from Polar to Horizontal Bar for better visibility)
+            // 3. Category Horizontal Bar
             const categoryCtx = document.getElementById('categoryChart').getContext('2d');
             new Chart(categoryCtx, {
                 type: 'bar',
@@ -435,15 +506,13 @@
                     datasets: [{
                         label: 'Revenue',
                         data: [5984248, 5178590, 3752762],
-                        backgroundColor: 'rgba(168, 85, 247, 0.8)', // Neon Purple
+                        backgroundColor: 'rgba(168, 85, 247, 0.8)',
                         borderRadius: 6
                     }]
                 },
                 options: {
+                    ...sharedOptions,
                     indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
                     scales: {
                         x: { grid: gridConfig, ticks: { callback: (val) => (val/1000000).toFixed(1) + 'M' } },
                         y: { grid: { display: false } }
@@ -458,9 +527,9 @@
                 data: {
                     labels: ["Q1", "Q2", "Q3", "Q4", "Q1(Est)", "Q2(Est)"],
                     datasets: [{
-                        label: 'Simulated Profit Trend',
+                        label: 'Profit Trend',
                         data: [250000, 320000, 290000, 410000, 380000, 450000],
-                        borderColor: '#34d399', // Neon Green
+                        borderColor: '#34d399',
                         backgroundColor: 'rgba(52, 211, 153, 0.1)',
                         borderWidth: 3,
                         fill: true,
@@ -470,9 +539,7 @@
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    ...sharedOptions,
                     scales: {
                         y: { grid: gridConfig, ticks: { callback: (val) => (val/1000).toFixed(0) + 'k' } },
                         x: { grid: { display: false } }
@@ -498,10 +565,8 @@
                     }]
                 },
                 options: {
+                    ...sharedOptions,
                     indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
                     scales: {
                         x: { grid: gridConfig, ticks: { callback: (val) => (val/1000000).toFixed(1) + 'M' } },
                         y: { grid: { display: false } }
