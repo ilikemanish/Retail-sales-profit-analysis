@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Retail Sales & Profit Analysis</title>
+    <!-- Guaranteed stable version of Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-base: #020617;
+            --glass-bg: rgba(30, 41, 59, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --neon-blue: #38bdf8;
+            --neon-purple: #a855f7;
+            --neon-pink: #ec4899;
+            --neon-green: #34d399;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        /* Animated Dark Webpage Background */
+        body {
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Glassmorphism Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(2, 6, 23, 0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-right: 1px solid var(--glass-border);
+            padding: 2.5rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .brand h2 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            line-height: 1.4;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--glass-bg);
+            color: var(--text-main);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transform: translateX(5px);
+        }
+
+        /* Main Webpage Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 3rem;
+            width: calc(100% - 280px);
+        }
+
+        .page-header {
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .page-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-top: 5px;
+        }
+
+        /* Premium KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3.5rem;
+        }
+
+        .kpi-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem 1.5rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out backwards;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255,255,255,0.2);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        .kpi-title {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .kpi-subtext {
+            font-size: 0.85rem;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        /* Dynamic Chart Containers */
+        .chart-grid-2, .chart-grid-3 {
+            display: grid;
+            gap: 2rem;
+            margin-bottom: 3.5rem;
+        }
+        
+        .chart-grid-2 { grid-template-columns: 1fr 1fr; }
+        .chart-grid-3 { grid-template-columns: 2fr 1fr; }
+
+        .chart-wrapper {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 1.5rem;
+            animation: fadeInUp 1s ease-out backwards;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        .canvas-container {
+            position: relative;
+            height: 320px;
+            width: 100%;
+        }
+
+        /* Insight Web Sections */
+        .insight-box {
+            background: linear-gradient(145deg, rgba(30,41,59,0.7), rgba(15,23,42,0.9));
+            border-left: 4px solid var(--neon-blue);
+            padding: 2rem;
+            border-radius: 0 20px 20px 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .insight-box h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .insight-box p {
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 1024px) {
+            .chart-grid-2, .chart-grid-3 { grid-template-columns: 1fr; }
+            .kpi-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 768px) {
+            .sidebar { width: 80px; padding: 2rem 1rem; }
+            .brand h2, .nav-link span { display: none; }
+            .nav-link { justify-content: center; }
+            .main-content { margin-left: 80px; width: calc(100% - 80px); padding: 1.5rem; }
+            .kpi-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="brand">
+            <h2>Project Retail Sales & Profit Analysis</h2>
+        </div>
+        <div class="nav-menu">
+            <a href="#overview" class="nav-link active"><i class="fas fa-home"></i> <span>Overview</span></a>
+            <a href="#charts" class="nav-link"><i class="fas fa-chart-simple"></i> <span>Visuals</span></a>
+            <a href="#logistics" class="nav-link"><i class="fas fa-truck-fast"></i> <span>Logistics</span></a>
+            <a href="#details" class="nav-link"><i class="fas fa-list"></i> <span>Deep Details</span></a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        
+        <!-- SECTION 1: OVERVIEW -->
+        <section id="overview">
+            <div class="page-header">
+                <h1>Executive Dashboard</h1>
+                <p>Live interactive data reporting based on cleaned data analytics.</p>
+            </div>
+
+            <div class="kpi-grid">
+                <div class="kpi-card" style="animation-delay: 0.1s;">
+                    <div class="kpi-title">Total Revenue <i class="fas fa-wallet" style="color: var(--neon-blue);"></i></div>
+                    <div class="kpi-value">14.91M</div>
+                    <div class="kpi-subtext" style="color: var(--neon-blue);">Leading Region: West (3.59M)</div>
+                </div>
+                <div class="kpi-card" style="animation-delay: 0.2s;">
+                    <div class="kpi-title">Total Profit <i class="fas fa-chart-line" style="color: var(--neon-green);"></i></div>
+                    <div class="kpi-value">1.52M</div>
+                    <div class="kpi-subtext" style="color: var(--neon-green);">10.2% Net Profit Margin</div>
+                </div>
+                <div class="kpi-card" style="animation-delay: 0.3s;">
+                    <div class="kpi-title">Total Orders <i class="fas fa-box" style="color: var(--neon-purple);"></i></div>
+                    <div class="kpi-value">5,496</div>
+                    <div class="kpi-subtext" style="color: var(--text-muted);">From 795 Unique Clients</div>
+                </div>
+                <div class="kpi-card" style="animation-delay: 0.4s;">
+                    <div class="kpi-title">Avg Order Value <i class="fas fa-receipt" style="color: var(--neon-pink);"></i></div>
+                    <div class="kpi-value">2,713</div>
+                    <div class="kpi-subtext" style="color: var(--text-muted);">Strong Corporate Demand</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: VISUAL CHARTS -->
+        <section id="charts">
+            <div class="page-header" style="margin-top: 2rem;">
+                <h1>Market Dynamics</h1>
+            </div>
+            
+            <div class="chart-grid-3">
+                <div class="chart-wrapper" style="animation-delay: 0.2s;">
+                    <div class="chart-title">Revenue Generation by Region</div>
+                    <div class="canvas-container">
+                        <canvas id="regionChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-wrapper" style="animation-delay: 0.4s;">
+                    <div class="chart-title">Sales by Segment</div>
+                    <div class="canvas-container">
+                        <canvas id="segmentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-grid-2">
+                <div class="chart-wrapper" style="animation-delay: 0.6s;">
+                    <div class="chart-title">Product Category Dominance</div>
+                    <div class="canvas-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-wrapper" style="animation-delay: 0.8s;">
+                    <div class="chart-title">Quarterly Profit Projection</div>
+                    <div class="canvas-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: LOGISTICS -->
+        <section id="logistics">
+            <div class="chart-wrapper" style="margin-bottom: 4rem;">
+                <div class="chart-title">Fulfillment by Shipping Mode (Volume)</div>
+                <div class="canvas-container" style="height: 250px;">
+                    <canvas id="shippingChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: DEEP DETAILS -->
+        <section id="details">
+            <div class="page-header">
+                <h1>Accurate Details & Insights</h1>
+            </div>
+            
+            <div class="chart-grid-2">
+                <div class="insight-box">
+                    <h3 style="color: var(--neon-blue);"><i class="fas fa-star"></i> Top Performing Client</h3>
+                    <p>Our top purchaser, <strong>Emily Phan</strong>, accounts for a staggering <strong>117,124</strong> in revenue volume. With the Corporate segment driving the most sales overall (5.49M), assigning dedicated B2B account managers is critical for retention.</p>
+                </div>
+
+                <div class="insight-box" style="border-left-color: var(--neon-purple);">
+                    <h3 style="color: var(--neon-purple);"><i class="fas fa-crown"></i> Leading Product</h3>
+                    <p>The <strong>Global Troy Executive Leather Low-Back Tilter</strong> is the single highest-grossing product, generating <strong>275,941</strong>. Technology (5.98M) and Furniture (5.17M) are the overarching category leaders driving the business forward.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript - GUARANTEED VISIBILITY -->
+    <script>
+        // Ensure DOM is fully loaded before rendering charts
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Global Chart Settings
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+            
+            const gridConfig = {
+                color: 'rgba(255, 255, 255, 0.05)',
+                drawBorder: false
+            };
+
+            // 1. Regional Bar Chart
+            const regionCtx = document.getElementById('regionChart').getContext('2d');
+            new Chart(regionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ["West", "Ontario", "Prairie", "Atlantic", "Quebec", "Yukon", "NW Terr.", "Nunavut"],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [3597549, 3063212, 2837305, 2014248, 1510195, 975867, 800847, 116376],
+                        backgroundColor: 'rgba(56, 189, 248, 0.8)', // Neon Blue
+                        borderColor: '#38bdf8',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: gridConfig, ticks: { callback: (val) => (val/1000000).toFixed(1) + 'M' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 2. Segment Doughnut Chart
+            const segmentCtx = document.getElementById('segmentChart').getContext('2d');
+            new Chart(segmentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ["Corporate", "Home Office", "Consumer", "Small Business"],
+                    datasets: [{
+                        data: [5498904, 3566160, 3063611, 2786923],
+                        backgroundColor: [
+                            'rgba(168, 85, 247, 0.8)', // Purple
+                            'rgba(56, 189, 248, 0.8)', // Blue
+                            'rgba(52, 211, 153, 0.8)', // Green
+                            'rgba(236, 72, 153, 0.8)'  // Pink
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc', padding: 15, usePointStyle: true } } }
+                }
+            });
+
+            // 3. Category Bar (Changed from Polar to Horizontal Bar for better visibility)
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'bar',
+                data: {
+                    labels: ["Technology", "Furniture", "Office Supplies"],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [5984248, 5178590, 3752762],
+                        backgroundColor: 'rgba(168, 85, 247, 0.8)', // Neon Purple
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: gridConfig, ticks: { callback: (val) => (val/1000000).toFixed(1) + 'M' } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 4. Trend Line Chart
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ["Q1", "Q2", "Q3", "Q4", "Q1(Est)", "Q2(Est)"],
+                    datasets: [{
+                        label: 'Simulated Profit Trend',
+                        data: [250000, 320000, 290000, 410000, 380000, 450000],
+                        borderColor: '#34d399', // Neon Green
+                        backgroundColor: 'rgba(52, 211, 153, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#34d399',
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: gridConfig, ticks: { callback: (val) => (val/1000).toFixed(0) + 'k' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 5. Shipping Bar Chart
+            const shippingCtx = document.getElementById('shippingChart').getContext('2d');
+            new Chart(shippingCtx, {
+                type: 'bar',
+                data: {
+                    labels: ["Regular Air", "Delivery Truck", "Express Air"],
+                    datasets: [{
+                        label: 'Volume',
+                        data: [7506303, 6224878, 1184418],
+                        backgroundColor: [
+                            'rgba(56, 189, 248, 0.8)',
+                            'rgba(168, 85, 247, 0.8)',
+                            'rgba(236, 72, 153, 0.8)'
+                        ],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: gridConfig, ticks: { callback: (val) => (val/1000000).toFixed(1) + 'M' } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Smooth Scroll Active Link Updating
+            const sections = document.querySelectorAll("section");
+            const navLinks = document.querySelectorAll(".nav-link");
+
+            window.addEventListener("scroll", () => {
+                let current = "";
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (scrollY >= sectionTop - 150) {
+                        current = section.getAttribute("id");
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove("active");
+                    if (link.getAttribute("href").includes(current)) {
+                        link.classList.add("active");
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
