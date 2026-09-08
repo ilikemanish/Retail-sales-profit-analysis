@@ -2,7 +2,7 @@
 
 # 📊 Retail Sales & Profit Analysis
 
-[![Live Dashboard](https://img.shields.io/badge/🔴_VIEW_LIVE_DASHBOARD-FF0000?style=for-the-badge&logo=googlechrome&logoColor=white)](https://manish-kashyap.github.io/Retail-sales-profit-analysis/)
+[![Live Dashboard](https://img.shields.io/badge/🔴_VIEW_LIVE_DASHBOARD-FF0000?style=for-the-badge&logo=googlechrome&logoColor=white)](https://ilikemanish.github.io/Retail-sales-profit-analysis/)
 
 ![Excel](https://img.shields.io/badge/Tool-Microsoft%20Excel-217346?style=flat-square&logo=microsoftexcel&logoColor=white)
 ![Dashboard](https://img.shields.io/badge/Project-Dashboard-0078D4?style=flat-square&logo=powerbi&logoColor=white)
