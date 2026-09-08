@@ -3,596 +3,624 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Retail Sales & Profit Analysis</title>
-    <!-- Guaranteed stable version of Chart.js -->
+    <title>Retail Sales & Profit Analysis Dashboard</title>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
-            --bg-base: #020617;
-            --glass-bg: rgba(30, 41, 59, 0.4);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --neon-blue: #38bdf8;
-            --neon-purple: #a855f7;
-            --neon-pink: #ec4899;
-            --neon-green: #34d399;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --bg-body: #050505; 
+            --bg-surface: rgba(20, 20, 22, 0.6);
+            --bg-glass: rgba(30, 30, 35, 0.4);
+            --border-light: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            
+            /* Neon Premium Accents */
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-emerald: #10b981;
+            --accent-rose: #f43f5e;
+            
+            --sidebar-width: 260px;
+            --header-height: 75px;
         }
 
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            margin: 0; padding: 0; box-sizing: border-box;
             font-family: 'Plus Jakarta Sans', sans-serif;
             scroll-behavior: smooth;
         }
 
-        /* Animated Dark Webpage Background */
         body {
-            background-color: var(--bg-base);
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0px, transparent 50%);
-            background-attachment: fixed;
-            color: var(--text-main);
-            display: flex;
-            min-height: 100vh;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
             overflow-x: hidden;
+            position: relative;
         }
 
-        /* Glassmorphism Sidebar (Desktop) */
-        .sidebar {
-            width: 280px;
-            background: rgba(2, 6, 23, 0.85);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border-right: 1px solid var(--glass-border);
-            padding: 2.5rem 1.5rem;
-            position: fixed;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            z-index: 100;
+        /* Ambient Animated Background Orbs */
+        .ambient-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1; overflow: hidden;
+            background: #050505;
+        }
+        
+        .orb {
+            position: absolute; border-radius: 50%; filter: blur(80px);
+            opacity: 0.4; animation: float 20s infinite ease-in-out alternate;
+        }
+        
+        .orb-1 { width: 400px; height: 400px; background: rgba(59, 130, 246, 0.15); top: -10%; left: -10%; }
+        .orb-2 { width: 500px; height: 500px; background: rgba(139, 92, 246, 0.12); bottom: -20%; right: -10%; animation-delay: -5s; }
+        .orb-3 { width: 300px; height: 300px; background: rgba(16, 185, 129, 0.1); top: 40%; left: 50%; animation-delay: -10s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, 50px) scale(1.1); }
+            100% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+
+        /* =========================================
+           TOP HEADER & USER CONTROLS
+           ========================================= */
+        .top-header {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: var(--header-height);
+            background: rgba(5, 5, 5, 0.7);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-light);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 2rem; z-index: 1000;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 1.5rem; }
+
+        .menu-toggle {
+            background: transparent; border: none; color: var(--text-primary);
+            font-size: 1.4rem; cursor: pointer; width: 45px; height: 45px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
             transition: all 0.3s ease;
         }
 
-        .brand h2 {
-            font-size: 1.3rem;
-            font-weight: 800;
-            line-height: 1.4;
-            margin-bottom: 3rem;
-            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .menu-toggle:hover { background: rgba(255,255,255,0.1); transform: scale(1.05); }
+
+        .header-title {
+            font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #fff 0%, #9ca3af 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        .nav-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        .header-right { display: flex; align-items: center; gap: 1.2rem; }
+
+        /* Premium Notification & Avatar */
+        .icon-btn {
+            background: var(--bg-surface); border: 1px solid var(--border-light);
+            color: var(--text-secondary); width: 42px; height: 42px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; position: relative; transition: all 0.3s ease;
+            font-size: 1.1rem;
         }
+
+        .icon-btn:hover {
+            color: var(--text-primary); border-color: var(--accent-blue);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); transform: translateY(-2px);
+        }
+
+        .pulse-dot {
+            position: absolute; top: 10px; right: 12px;
+            width: 8px; height: 8px; background: var(--accent-rose);
+            border-radius: 50%; box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(244, 63, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+        }
+
+        .profile-avatar {
+            width: 42px; height: 42px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; color: #fff; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); transition: all 0.3s ease;
+        }
+
+        .profile-avatar:hover { transform: scale(1.08) rotate(5deg); }
+
+        /* =========================================
+           SIDEBAR
+           ========================================= */
+        .sidebar {
+            position: fixed; top: var(--header-height); left: calc(-1 * var(--sidebar-width));
+            width: var(--sidebar-width); height: calc(100vh - var(--header-height));
+            background: rgba(10, 10, 12, 0.8); backdrop-filter: blur(25px);
+            border-right: 1px solid var(--border-light); padding: 2.5rem 1.2rem;
+            z-index: 900; transition: left 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .sidebar.active { left: 0; }
+
+        .nav-menu { display: flex; flex-direction: column; gap: 0.8rem; }
 
         .nav-link {
-            color: var(--text-muted);
-            text-decoration: none;
-            padding: 14px 18px;
-            border-radius: 12px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border: 1px solid transparent;
+            color: var(--text-secondary); text-decoration: none;
+            padding: 1rem 1.2rem; border-radius: 14px; font-weight: 600; font-size: 0.95rem;
+            display: flex; align-items: center; gap: 1.2rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;
         }
 
-        .nav-link:hover, .nav-link.active {
-            background: var(--glass-bg);
-            color: var(--text-main);
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            transform: translateX(5px);
+        .nav-link i { font-size: 1.2rem; width: 20px; text-align: center; transition: transform 0.3s ease; }
+
+        .nav-link:hover {
+            color: var(--text-primary); background: rgba(255, 255, 255, 0.05); transform: translateX(5px);
         }
 
-        /* Main Webpage Content */
+        .nav-link.active {
+            color: var(--text-primary); background: linear-gradient(90deg, rgba(59,130,246,0.15) 0%, transparent 100%);
+            border-left: 3px solid var(--accent-blue);
+        }
+        
+        .nav-link.active i { color: var(--accent-blue); transform: scale(1.15); }
+
+        .overlay {
+            position: fixed; top: var(--header-height); left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            z-index: 899; opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+        }
+
+        .overlay.active { opacity: 1; pointer-events: all; }
+
+        /* =========================================
+           MAIN DASHBOARD CONTENT
+           ========================================= */
         .main-content {
-            margin-left: 280px;
-            padding: 3rem;
-            width: calc(100% - 280px);
-            transition: all 0.3s ease;
+            padding: calc(var(--header-height) + 2.5rem) 2.5rem 2.5rem 2.5rem;
+            transition: margin-left 0.5s cubic-bezier(0.16, 1, 0.3, 1); width: 100%;
         }
 
-        .page-header {
-            margin-bottom: 2.5rem;
-            animation: fadeInDown 0.8s ease-out;
+        @media (min-width: 1025px) {
+            .sidebar { left: 0; }
+            .main-content { margin-left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); }
+            .menu-toggle { display: none; }
+            .overlay { display: none !important; }
         }
 
-        .page-header h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            line-height: 1.2;
-        }
+        /* Intersection Observer Animation Classes */
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .delay-1 { transition-delay: 0.1s; } .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; } .delay-4 { transition-delay: 0.4s; }
 
-        .page-header p {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            margin-top: 8px;
-        }
-
-        /* Premium KPI Cards */
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 3.5rem;
-        }
+        /* KPI Cards */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
 
         .kpi-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 2rem 1.5rem;
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-            animation: fadeInUp 0.8s ease-out backwards;
+            background: var(--bg-glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-light); border-radius: 24px; padding: 2rem;
+            position: relative; overflow: hidden; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .kpi-card::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transform: skewX(-20deg); transition: 0.5s;
         }
 
         .kpi-card:hover {
-            transform: translateY(-8px);
-            border-color: rgba(255,255,255,0.2);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-        }
-
-        .kpi-title {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .kpi-value {
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: var(--text-main);
-            word-wrap: break-word;
-        }
-
-        .kpi-subtext {
-            font-size: 0.85rem;
-            margin-top: 8px;
-            font-weight: 500;
-        }
-
-        /* Dynamic Chart Containers */
-        .chart-grid-2, .chart-grid-3 {
-            display: grid;
-            gap: 1.5rem;
-            margin-bottom: 3.5rem;
-            width: 100%;
+            transform: translateY(-8px); border-color: var(--border-hover);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
         
-        .chart-grid-2 { grid-template-columns: repeat(2, 1fr); }
-        .chart-grid-3 { grid-template-columns: 2fr 1fr; }
+        .kpi-card:hover::before { left: 150%; }
 
-        .chart-wrapper {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 1.5rem;
-            animation: fadeInUp 1s ease-out backwards;
-            width: 100%;
-            overflow: hidden;
+        /* Assigning glow colors based on nth-child for coolness */
+        .kpi-card:nth-child(1):hover { box-shadow: 0 15px 35px rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); }
+        .kpi-card:nth-child(2):hover { box-shadow: 0 15px 35px rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); }
+        .kpi-card:nth-child(3):hover { box-shadow: 0 15px 35px rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4); }
+        .kpi-card:nth-child(4):hover { box-shadow: 0 15px 35px rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.4); }
+
+        .kpi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; }
+        .kpi-title { color: var(--text-secondary); font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .kpi-icon {
+            width: 45px; height: 45px; border-radius: 12px;
+            background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .chart-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: var(--text-main);
+        .kpi-value { font-size: 2.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .kpi-trend { font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+
+        /* Charts Section */
+        .chart-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.8rem; margin-bottom: 3rem; }
+        .chart-grid-wide { grid-template-columns: 2fr 1fr; }
+
+        .chart-card {
+            background: var(--bg-glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-light); border-radius: 24px; padding: 2rem;
+            transition: all 0.4s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
-        .canvas-container {
-            position: relative;
-            height: 320px;
-            width: 100%;
+        .chart-card:hover { transform: translateY(-5px); border-color: var(--border-hover); box-shadow: 0 15px 40px rgba(0,0,0,0.3); }
+        .chart-header { margin-bottom: 2rem; }
+        .chart-title { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
+        .chart-subtitle { font-size: 0.85rem; color: var(--text-secondary); margin-top: 6px; }
+        .canvas-container { position: relative; height: 320px; width: 100%; }
+
+        /* Insights Section */
+        .insight-card {
+            background: linear-gradient(145deg, rgba(30,30,35,0.8), rgba(15,15,18,0.9));
+            border: 1px solid var(--border-light); border-radius: 24px; padding: 2.5rem;
+            display: flex; flex-direction: column; justify-content: center; transition: all 0.4s ease;
         }
 
-        /* Insight Web Sections */
-        .insight-box {
-            background: linear-gradient(145deg, rgba(30,41,59,0.7), rgba(15,23,42,0.9));
-            border-left: 4px solid var(--neon-blue);
-            padding: 2rem;
-            border-radius: 0 20px 20px 0;
-            margin-bottom: 1.5rem;
-        }
+        .insight-card:hover { transform: scale(1.02); border-color: rgba(255,255,255,0.15); box-shadow: 0 15px 30px rgba(0,0,0,0.4); }
+        .insight-icon { font-size: 2.2rem; margin-bottom: 1.2rem; filter: drop-shadow(0 0 10px currentColor); }
+        .insight-card h3 { font-size: 1.3rem; margin-bottom: 1rem; font-weight: 700; }
+        .insight-card p { color: var(--text-secondary); font-size: 1.05rem; line-height: 1.7; }
+        .insight-card strong { color: var(--text-primary); font-weight: 700; }
 
-        .insight-box h3 {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            color: var(--text-main);
-        }
-
-        .insight-box p {
-            color: var(--text-muted);
-            line-height: 1.7;
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* =========================================
-           RESPONSIVE DESIGN LOGIC
-           ========================================= */
-
-        /* Tablets & Smaller Laptops */
+        /* Mobile Adjustments */
         @media (max-width: 1024px) {
-            .chart-grid-3 { grid-template-columns: 1fr; }
-            .main-content { padding: 2rem; }
-            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .chart-grid, .chart-grid-wide { grid-template-columns: 1fr; }
+            .main-content { padding: calc(var(--header-height) + 1.5rem) 1.5rem 1.5rem 1.5rem; margin-left: 0; width: 100%; }
         }
 
-        /* Mobile Devices (Phones) */
-        @media (max-width: 768px) {
-            /* Turn sidebar into bottom navigation */
-            .sidebar {
-                width: 100%;
-                height: 70px;
-                flex-direction: row;
-                justify-content: space-around;
-                align-items: center;
-                padding: 0 10px;
-                bottom: 0;
-                top: auto;
-                border-right: none;
-                border-top: 1px solid var(--glass-border);
-                background: rgba(2, 6, 23, 0.95);
-            }
-
-            .brand { display: none; } /* Hide logo on mobile */
-
-            .nav-menu {
-                flex-direction: row;
-                width: 100%;
-                justify-content: space-between;
-                gap: 0;
-            }
-
-            .nav-link {
-                flex-direction: column;
-                gap: 4px;
-                padding: 8px 12px;
-                font-size: 0.75rem;
-                background: transparent !important;
-                border: none !important;
-                box-shadow: none !important;
-            }
-
-            .nav-link:hover, .nav-link.active {
-                color: var(--neon-blue) !important;
-                transform: none;
-            }
-
-            .nav-link i { font-size: 1.2rem; }
-            
-            /* Expand main content */
-            .main-content {
-                margin-left: 0;
-                width: 100%;
-                padding: 1.5rem 1rem 90px 1rem; /* Extra padding at bottom for nav */
-            }
-
-            /* Adjust typography & spacing */
-            .page-header h1 { font-size: 2rem; }
-            .kpi-grid { grid-template-columns: 1fr; gap: 1rem; }
-            .chart-grid-2 { grid-template-columns: 1fr; }
-            .chart-wrapper { padding: 1rem; }
-            
-            /* Shrink charts slightly so they fit mobile screens beautifully */
+        @media (max-width: 600px) {
+            .top-header { padding: 0 1rem; }
+            .header-title { font-size: 1.1rem; }
+            .main-content { padding: calc(var(--header-height) + 1rem) 1rem 1rem 1rem; }
+            .kpi-grid { grid-template-columns: 1fr; }
+            .kpi-card { padding: 1.5rem; }
             .canvas-container { height: 260px; }
-            .insight-box { padding: 1.5rem; }
+            .insight-card { padding: 1.8rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Responsive Sidebar / Bottom Nav -->
-    <nav class="sidebar">
-        <div class="brand">
-            <h2>Project Retail Sales & Profit Analysis</h2>
-        </div>
-        <div class="nav-menu">
-            <a href="#overview" class="nav-link active"><i class="fas fa-home"></i> <span>Overview</span></a>
-            <a href="#charts" class="nav-link"><i class="fas fa-chart-simple"></i> <span>Visuals</span></a>
-            <a href="#logistics" class="nav-link"><i class="fas fa-truck-fast"></i> <span>Logistics</span></a>
-            <a href="#details" class="nav-link"><i class="fas fa-list"></i> <span>Insights</span></a>
-        </div>
-    </nav>
+    <!-- Ambient Background -->
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
 
-    <!-- Main Content -->
+    <!-- TOP HEADER -->
+    <header class="top-header">
+        <div class="header-left">
+            <button class="menu-toggle" id="menuToggle"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+            <div class="header-title">Retail Sales & Profit Analysis</div>
+        </div>
+        <div class="header-right">
+            <button class="icon-btn"><i class="fa-regular fa-bell"></i><span class="pulse-dot"></span></button>
+            <div class="profile-avatar"><i class="fa-regular fa-user"></i></div>
+        </div>
+    </header>
+
+    <!-- OVERLAY FOR MOBILE -->
+    <div class="overlay" id="sidebarOverlay"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <nav class="nav-menu">
+            <a href="#overview" class="nav-link active"><i class="fa-solid fa-chart-pie"></i> Overview</a>
+            <a href="#market" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Market Dynamics</a>
+            <a href="#logistics" class="nav-link"><i class="fa-solid fa-truck-fast"></i> Logistics</a>
+            <a href="#insights" class="nav-link"><i class="fa-solid fa-wand-magic-sparkles"></i> Insights</a>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
     <main class="main-content">
         
-        <!-- SECTION 1: OVERVIEW -->
+        <!-- SECTION: KPIs -->
         <section id="overview">
-            <div class="page-header">
-                <h1>Executive Dashboard</h1>
-                <p>Live interactive data reporting based on cleaned data analytics.</p>
-            </div>
-
             <div class="kpi-grid">
-                <div class="kpi-card" style="animation-delay: 0.1s;">
-                    <div class="kpi-title">Total Revenue <i class="fas fa-wallet" style="color: var(--neon-blue);"></i></div>
-                    <div class="kpi-value">14.91M</div>
-                    <div class="kpi-subtext" style="color: var(--neon-blue);">Leading Region: West (3.59M)</div>
+                <div class="kpi-card reveal delay-1">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Total Revenue</span>
+                        <div class="kpi-icon" style="color: var(--accent-blue);"><i class="fa-solid fa-wallet"></i></div>
+                    </div>
+                    <div class="kpi-value">$<span class="counter" data-target="14.91">0</span>M</div>
+                    <div class="kpi-trend" style="color: var(--accent-blue);"><i class="fa-solid fa-arrow-up-right-dots"></i> Top Region: West</div>
                 </div>
-                <div class="kpi-card" style="animation-delay: 0.2s;">
-                    <div class="kpi-title">Total Profit <i class="fas fa-chart-line" style="color: var(--neon-green);"></i></div>
-                    <div class="kpi-value">1.52M</div>
-                    <div class="kpi-subtext" style="color: var(--neon-green);">10.2% Net Profit Margin</div>
+
+                <div class="kpi-card reveal delay-2">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Net Profit</span>
+                        <div class="kpi-icon" style="color: var(--accent-emerald);"><i class="fa-solid fa-chart-line"></i></div>
+                    </div>
+                    <div class="kpi-value">$<span class="counter" data-target="1.52">0</span>M</div>
+                    <div class="kpi-trend" style="color: var(--accent-emerald);"><i class="fa-solid fa-arrow-trend-up"></i> 10.2% Margin</div>
                 </div>
-                <div class="kpi-card" style="animation-delay: 0.3s;">
-                    <div class="kpi-title">Total Orders <i class="fas fa-box" style="color: var(--neon-purple);"></i></div>
-                    <div class="kpi-value">5,496</div>
-                    <div class="kpi-subtext" style="color: var(--text-muted);">From 795 Unique Clients</div>
+
+                <div class="kpi-card reveal delay-3">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Total Orders</span>
+                        <div class="kpi-icon" style="color: var(--accent-purple);"><i class="fa-solid fa-box-open"></i></div>
+                    </div>
+                    <div class="kpi-value"><span class="counter" data-target="5496" data-speed="100">0</span></div>
+                    <div class="kpi-trend" style="color: var(--text-secondary);"><i class="fa-solid fa-users"></i> 795 Unique Clients</div>
                 </div>
-                <div class="kpi-card" style="animation-delay: 0.4s;">
-                    <div class="kpi-title">Avg Order Value <i class="fas fa-receipt" style="color: var(--neon-pink);"></i></div>
-                    <div class="kpi-value">2,713</div>
-                    <div class="kpi-subtext" style="color: var(--text-muted);">Strong Corporate Demand</div>
+
+                <div class="kpi-card reveal delay-4">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Avg Order Value</span>
+                        <div class="kpi-icon" style="color: var(--accent-rose);"><i class="fa-solid fa-receipt"></i></div>
+                    </div>
+                    <div class="kpi-value">$<span class="counter" data-target="2713" data-speed="80">0</span></div>
+                    <div class="kpi-trend" style="color: var(--text-secondary);"><i class="fa-solid fa-building"></i> B2B Driven</div>
                 </div>
             </div>
         </section>
 
-        <!-- SECTION 2: VISUAL CHARTS -->
-        <section id="charts">
-            <div class="page-header" style="margin-top: 2rem;">
-                <h1>Market Dynamics</h1>
-            </div>
-            
-            <div class="chart-grid-3">
-                <div class="chart-wrapper" style="animation-delay: 0.2s;">
-                    <div class="chart-title">Revenue Generation by Region</div>
+        <!-- SECTION: CHARTS -->
+        <section id="market">
+            <div class="chart-grid chart-grid-wide">
+                <div class="chart-card reveal">
+                    <div class="chart-header">
+                        <div class="chart-title">Revenue by Region</div>
+                        <div class="chart-subtitle">Geographic performance distribution across territories</div>
+                    </div>
                     <div class="canvas-container">
                         <canvas id="regionChart"></canvas>
                     </div>
                 </div>
-                <div class="chart-wrapper" style="animation-delay: 0.4s;">
-                    <div class="chart-title">Sales by Segment</div>
+                
+                <div class="chart-card reveal delay-1">
+                    <div class="chart-header">
+                        <div class="chart-title">Sales Segment</div>
+                        <div class="chart-subtitle">Customer base demographic breakdown</div>
+                    </div>
                     <div class="canvas-container">
                         <canvas id="segmentChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <div class="chart-grid-2">
-                <div class="chart-wrapper" style="animation-delay: 0.6s;">
-                    <div class="chart-title">Product Category Dominance</div>
-                    <div class="canvas-container">
-                        <canvas id="categoryChart"></canvas>
+            <div class="chart-grid">
+                <div class="chart-card reveal">
+                    <div class="chart-header">
+                        <div class="chart-title">Profit Trend Projection</div>
+                        <div class="chart-subtitle">Quarterly financial trajectory and estimates</div>
                     </div>
-                </div>
-                <div class="chart-wrapper" style="animation-delay: 0.8s;">
-                    <div class="chart-title">Quarterly Profit Projection</div>
                     <div class="canvas-container">
                         <canvas id="trendChart"></canvas>
                     </div>
                 </div>
-            </div>
-        </section>
 
-        <!-- SECTION 3: LOGISTICS -->
-        <section id="logistics">
-            <div class="chart-wrapper" style="margin-bottom: 4rem;">
-                <div class="chart-title">Fulfillment by Shipping Mode (Volume)</div>
-                <div class="canvas-container">
-                    <canvas id="shippingChart"></canvas>
+                <div class="chart-card reveal delay-1">
+                    <div class="chart-header">
+                        <div class="chart-title">Category Revenue</div>
+                        <div class="chart-subtitle">Performance of top product categories</div>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- SECTION 4: DEEP DETAILS -->
-        <section id="details">
-            <div class="page-header">
-                <h1>Accurate Details & Insights</h1>
-            </div>
-            
-            <div class="chart-grid-2">
-                <div class="insight-box">
-                    <h3 style="color: var(--neon-blue);"><i class="fas fa-star"></i> Top Performing Client</h3>
-                    <p>Our top purchaser, <strong>Emily Phan</strong>, accounts for a staggering <strong>117,124</strong> in revenue volume. With the Corporate segment driving the most sales overall (5.49M), assigning dedicated B2B account managers is critical for retention.</p>
+        <!-- SECTION: INSIGHTS & LOGISTICS -->
+        <section id="insights">
+            <div class="chart-grid">
+                <div class="chart-card reveal" id="logistics">
+                    <div class="chart-header">
+                        <div class="chart-title">Fulfillment Methods</div>
+                        <div class="chart-subtitle">Volume handled by shipping mode</div>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="shippingChart"></canvas>
+                    </div>
                 </div>
 
-                <div class="insight-box" style="border-left-color: var(--neon-purple);">
-                    <h3 style="color: var(--neon-purple);"><i class="fas fa-crown"></i> Leading Product</h3>
-                    <p>The <strong>Global Troy Executive Leather Low-Back Tilter</strong> is the single highest-grossing product, generating <strong>275,941</strong>. Technology (5.98M) and Furniture (5.17M) are the overarching category leaders driving the business forward.</p>
+                <div style="display: flex; flex-direction: column; gap: 1.8rem;">
+                    <div class="insight-card reveal delay-1">
+                        <div class="insight-icon" style="color: var(--accent-blue);"><i class="fa-solid fa-award"></i></div>
+                        <h3>Top Performing Client</h3>
+                        <p>Our top purchaser, <strong>Emily Phan</strong>, accounts for <strong>$117,124</strong> in revenue. The Corporate segment drives $5.49M overall, indicating extreme high value in dedicated B2B account management strategies.</p>
+                    </div>
+                    <div class="insight-card reveal delay-2">
+                        <div class="insight-icon" style="color: var(--accent-purple);"><i class="fa-solid fa-couch"></i></div>
+                        <h3>Leading Product Line</h3>
+                        <p>The <strong>Global Troy Executive Leather Tilter</strong> is the highest-grossing singular product, generating $275,941. Technology and Furniture continue to dominate overarching category sales.</p>
+                    </div>
                 </div>
             </div>
         </section>
 
     </main>
 
-    <!-- JavaScript - GUARANTEED VISIBILITY & RESPONSIVENESS -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             
-            // Global Chart Settings
-            Chart.defaults.color = '#94a3b8';
-            Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+            // --- UI Interaction & Animation Logic ---
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            // Sidebar Toggle
+            function toggleMenu() {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            }
+            menuToggle.addEventListener('click', toggleMenu);
+            overlay.addEventListener('click', toggleMenu);
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 1024) { sidebar.classList.remove('active'); overlay.classList.remove('active'); }
+                });
+            });
+
+            // Smooth Scroll Active Link
+            const sections = document.querySelectorAll("section");
+            window.addEventListener("scroll", () => {
+                let current = "";
+                sections.forEach(section => {
+                    if (scrollY >= section.offsetTop - 150) current = section.getAttribute("id");
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove("active");
+                    if (link.getAttribute("href").includes(current)) link.classList.add("active");
+                });
+            });
+
+            // Intersection Observer for Reveal Animations
+            const revealElements = document.querySelectorAll('.reveal');
+            const revealObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        
+                        // Trigger Number Counter if inside the revealed element
+                        const counters = entry.target.querySelectorAll('.counter');
+                        counters.forEach(counter => {
+                            const target = parseFloat(counter.getAttribute('data-target'));
+                            const isFloat = target % 1 !== 0;
+                            const speed = counter.getAttribute('data-speed') || 50; 
+                            const inc = target / speed;
+                            let count = 0;
+                            
+                            const updateCount = () => {
+                                count += inc;
+                                if (count < target) {
+                                    counter.innerText = isFloat ? count.toFixed(2) : Math.ceil(count).toLocaleString();
+                                    requestAnimationFrame(updateCount);
+                                } else {
+                                    counter.innerText = isFloat ? target.toFixed(2) : target.toLocaleString();
+                                }
+                            };
+                            updateCount();
+                            counter.classList.remove('counter'); // prevent re-triggering
+                        });
+                        
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
             
-            const gridConfig = {
-                color: 'rgba(255, 255, 255, 0.05)',
-                drawBorder: false
-            };
+            revealElements.forEach(el => revealObserver.observe(el));
 
-            // Shared options for flawless resizing
-            const sharedOptions = {
-                responsive: true,
-                maintainAspectRatio: false, // CRITICAL: allows canvas container to dictate height
-                plugins: { legend: { display: false } }
-            };
 
-            // 1. Regional Bar Chart
-            const regionCtx = document.getElementById('regionChart').getContext('2d');
-            new Chart(regionCtx, {
+            // --- Chart.js Global Config ---
+            Chart.defaults.color = '#9ca3af';
+            Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+            Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 15, 18, 0.9)';
+            Chart.defaults.plugins.tooltip.titleColor = '#fff';
+            Chart.defaults.plugins.tooltip.padding = 14;
+            Chart.defaults.plugins.tooltip.cornerRadius = 12;
+            Chart.defaults.plugins.tooltip.borderColor = 'rgba(255,255,255,0.1)';
+            Chart.defaults.plugins.tooltip.borderWidth = 1;
+            Chart.defaults.plugins.tooltip.boxPadding = 6;
+
+            const gridOptions = { color: 'rgba(255, 255, 255, 0.03)', drawBorder: false };
+            const sharedOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+
+            function getGradient(ctx, color1, color2, horizontal = false) {
+                const gradient = horizontal ? ctx.createLinearGradient(0, 0, 600, 0) : ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, color1);
+                gradient.addColorStop(1, color2);
+                return gradient;
+            }
+
+            // 1. Regional Chart
+            const ctxReg = document.getElementById('regionChart').getContext('2d');
+            new Chart(ctxReg, {
                 type: 'bar',
                 data: {
-                    labels: ["West", "Ontario", "Prairie", "Atlantic", "Quebec", "Yukon", "NW Terr.", "Nunavut"],
+                    labels: ["West", "Ontario", "Prairie", "Atlantic", "Quebec", "Yukon", "NW Terr."],
                     datasets: [{
-                        label: 'Revenue',
-                        data: [3597549, 3063212, 2837305, 2014248, 1510195, 975867, 800847, 116376],
-                        backgroundColor: 'rgba(56, 189, 248, 0.8)',
-                        borderColor: '#38bdf8',
-                        borderWidth: 1,
-                        borderRadius: 6
+                        data: [3.59, 3.06, 2.83, 2.01, 1.51, 0.97, 0.80],
+                        backgroundColor: getGradient(ctxReg, '#3b82f6', 'rgba(59, 130, 246, 0.1)'),
+                        borderColor: '#3b82f6', borderWidth: 1, borderRadius: 8, hoverBackgroundColor: '#60a5fa'
                     }]
                 },
-                options: {
-                    ...sharedOptions,
-                    scales: {
-                        y: { grid: gridConfig, ticks: { callback: (val) => (val/1000000).toFixed(1) + 'M' } },
-                        x: { grid: { display: false } }
-                    }
-                }
+                options: { ...sharedOptions, scales: { y: { grid: gridOptions, ticks: { callback: v => v + 'M' } }, x: { grid: { display: false } } } }
             });
 
-            // 2. Segment Doughnut Chart
-            const segmentCtx = document.getElementById('segmentChart').getContext('2d');
-            new Chart(segmentCtx, {
+            // 2. Segment Chart 
+            const ctxSeg = document.getElementById('segmentChart').getContext('2d');
+            new Chart(ctxSeg, {
                 type: 'doughnut',
                 data: {
-                    labels: ["Corporate", "Home Office", "Consumer", "Small Business"],
+                    labels: ["Corporate", "Home Office", "Consumer", "Small Biz"],
                     datasets: [{
-                        data: [5498904, 3566160, 3063611, 2786923],
-                        backgroundColor: [
-                            'rgba(168, 85, 247, 0.8)',
-                            'rgba(56, 189, 248, 0.8)',
-                            'rgba(52, 211, 153, 0.8)',
-                            'rgba(236, 72, 153, 0.8)'
-                        ],
-                        borderWidth: 0,
-                        hoverOffset: 10
+                        data: [5.49, 3.56, 3.06, 2.78],
+                        backgroundColor: ['#8b5cf6', '#3b82f6', '#10b981', '#f43f5e'],
+                        borderWidth: 0, hoverOffset: 10
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '65%',
-                    plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc', padding: 15, usePointStyle: true } } }
+                    responsive: true, maintainAspectRatio: false, cutout: '75%',
+                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#9ca3af', usePointStyle: true, padding: 20 } } }
                 }
             });
 
-            // 3. Category Horizontal Bar
-            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-            new Chart(categoryCtx, {
+            // 3. Trend Chart
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: ["Q1", "Q2", "Q3", "Q4", "Q1(E)"],
+                    datasets: [{
+                        data: [250, 320, 290, 410, 380],
+                        borderColor: '#10b981', backgroundColor: getGradient(ctxTrend, 'rgba(16, 185, 129, 0.4)', 'rgba(16, 185, 129, 0.0)'),
+                        borderWidth: 4, fill: true, tension: 0.4,
+                        pointBackgroundColor: '#050505', pointBorderColor: '#10b981', pointBorderWidth: 3, pointRadius: 6, pointHoverRadius: 8
+                    }]
+                },
+                options: { ...sharedOptions, scales: { y: { grid: gridOptions, ticks: { callback: v => v + 'k' } }, x: { grid: { display: false } } } }
+            });
+
+            // 4. Category Chart 
+            const ctxCat = document.getElementById('categoryChart').getContext('2d');
+            new Chart(ctxCat, {
                 type: 'bar',
                 data: {
                     labels: ["Technology", "Furniture", "Office Supplies"],
                     datasets: [{
-                        label: 'Revenue',
-                        data: [5984248, 5178590, 3752762],
-                        backgroundColor: 'rgba(168, 85, 247, 0.8)',
-                        borderRadius: 6
+                        data: [5.98, 5.17, 3.75],
+                        backgroundColor: getGradient(ctxCat, '#8b5cf6', 'rgba(139, 92, 246, 0.1)', true),
+                        borderColor: '#8b5cf6', borderWidth: 1, borderRadius: 8, hoverBackgroundColor: '#a78bfa'
                     }]
                 },
-                options: {
-                    ...sharedOptions,
-                    indexAxis: 'y',
-                    scales: {
-                        x: { grid: gridConfig, ticks: { callback: (val) => (val/1000000).toFixed(1) + 'M' } },
-                        y: { grid: { display: false } }
-                    }
-                }
+                options: { ...sharedOptions, indexAxis: 'y', scales: { x: { grid: gridOptions, ticks: { callback: v => v + 'M' } }, y: { grid: { display: false } } } }
             });
 
-            // 4. Trend Line Chart
-            const trendCtx = document.getElementById('trendChart').getContext('2d');
-            new Chart(trendCtx, {
-                type: 'line',
-                data: {
-                    labels: ["Q1", "Q2", "Q3", "Q4", "Q1(Est)", "Q2(Est)"],
-                    datasets: [{
-                        label: 'Profit Trend',
-                        data: [250000, 320000, 290000, 410000, 380000, 450000],
-                        borderColor: '#34d399',
-                        backgroundColor: 'rgba(52, 211, 153, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#34d399',
-                        pointRadius: 5
-                    }]
-                },
-                options: {
-                    ...sharedOptions,
-                    scales: {
-                        y: { grid: gridConfig, ticks: { callback: (val) => (val/1000).toFixed(0) + 'k' } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-
-            // 5. Shipping Bar Chart
-            const shippingCtx = document.getElementById('shippingChart').getContext('2d');
-            new Chart(shippingCtx, {
+            // 5. Shipping Chart 
+            const ctxShip = document.getElementById('shippingChart').getContext('2d');
+            new Chart(ctxShip, {
                 type: 'bar',
                 data: {
                     labels: ["Regular Air", "Delivery Truck", "Express Air"],
                     datasets: [{
-                        label: 'Volume',
-                        data: [7506303, 6224878, 1184418],
+                        data: [7.50, 6.22, 1.18],
                         backgroundColor: [
-                            'rgba(56, 189, 248, 0.8)',
-                            'rgba(168, 85, 247, 0.8)',
-                            'rgba(236, 72, 153, 0.8)'
+                            getGradient(ctxShip, '#3b82f6', 'rgba(59,130,246,0.1)', true),
+                            getGradient(ctxShip, '#8b5cf6', 'rgba(139,92,246,0.1)', true),
+                            getGradient(ctxShip, '#f43f5e', 'rgba(244,63,94,0.1)', true)
                         ],
-                        borderRadius: 6
+                        borderColor: ['#3b82f6', '#8b5cf6', '#f43f5e'], borderWidth: 1, borderRadius: 8
                     }]
                 },
-                options: {
-                    ...sharedOptions,
-                    indexAxis: 'y',
-                    scales: {
-                        x: { grid: gridConfig, ticks: { callback: (val) => (val/1000000).toFixed(1) + 'M' } },
-                        y: { grid: { display: false } }
-                    }
-                }
-            });
-
-            // Smooth Scroll Active Link Updating
-            const sections = document.querySelectorAll("section");
-            const navLinks = document.querySelectorAll(".nav-link");
-
-            window.addEventListener("scroll", () => {
-                let current = "";
-                sections.forEach(section => {
-                    const sectionTop = section.offsetTop;
-                    if (scrollY >= sectionTop - 150) {
-                        current = section.getAttribute("id");
-                    }
-                });
-
-                navLinks.forEach(link => {
-                    link.classList.remove("active");
-                    if (link.getAttribute("href").includes(current)) {
-                        link.classList.add("active");
-                    }
-                });
+                options: { ...sharedOptions, indexAxis: 'y', scales: { x: { grid: gridOptions, ticks: { callback: v => v + 'M' } }, y: { grid: { display: false } } } }
             });
         });
     </script>
